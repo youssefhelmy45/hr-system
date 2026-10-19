@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BrightPath HR System</title>
+<style>
+  :root {
+    --ink: #10242c;
+    --muted: #55696f;
+    --paper: #f3f7f8;
+    --panel: #ffffff;
+    --sea: #0e5a6b;
+    --sea-dark: #0a4350;
+    --sun: #f0b13a;
+    --line: #d3e0e3;
+    --error: #a1262b;
+    --error-bg: #fbeceb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 8px; font-weight: 700; letter-spacing: -0.01em; }
+  .lede { margin: 0 0 32px; color: var(--muted); max-width: 56ch; }
+  
+  /* Views toggling */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Navigation / Back Button */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--sea);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 20px;
+  }
+  .back-btn:hover { color: var(--sea-dark); text-decoration: underline; }
+
+  /* Cards & Grid for Portal */
+  #links { display: grid; gap: 16px; }
+  .card {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--sea);
+    border-radius: 8px; padding: 22px 24px;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 1.15rem; }
+  .card p { margin: 0; color: var(--muted); }
+  .btn {
+    flex-shrink: 0; padding: 12px 22px; font-size: 1rem; font-weight: 600;
+    background: var(--sea); color: #fff; border-radius: 8px; text-decoration: none; border: none; cursor: pointer;
+  }
+  .btn:hover { background: var(--sea-dark); }
+  .btn:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+  /* Chatbot Form & Interactive elements */
+  form { display: flex; gap: 10px; }
+  input[type="text"] {
+    flex: 1; min-width: 0;
+    padding: 14px 16px; font-size: 1rem; font-family: inherit;
+    border: 2px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink);
+  }
+  input[type="text"]:focus { outline: none; border-color: var(--sea); }
+  button[type="submit"] {
+    padding: 0 22px; font-size: 1rem; font-weight: 600; font-family: inherit;
+    background: var(--sea); color: #fff; border: 0; border-radius: 8px; cursor: pointer;
+  }
+  button[type="submit"]:hover { background: var(--sea-dark); }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+
+  .examples { margin: 14px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .examples button {
+    padding: 6px 12px; font-size: .875rem; font-weight: 500;
+    background: transparent; color: var(--sea); border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
+  }
+  .examples button:hover { background: #e4eef0; }
+
+  #result { margin-top: 32px; }
+  .result-card { background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--sea); border-radius: 8px; padding: 22px 24px; }
+  .result-card h2 { margin: 0 0 4px; font-size: .95rem; color: var(--muted); font-weight: 600; }
+  .question { margin: 0 0 14px; font-weight: 600; }
+  .answer { white-space: pre-wrap; margin: 0; }
+  
+  .sources { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .sources h3 { margin: 0 0 10px; font-size: .95rem; }
+  .source { margin: 0 0 8px; padding: 10px 12px; background: var(--paper); border-radius: 6px; font-size: .9rem; }
+  .source strong { display: block; color: var(--sea-dark); }
+  .source span { color: var(--muted); }
+
+  .loading { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+  .spinner {
+    width: 20px; height: 20px; border: 3px solid var(--line); border-top-color: var(--sea);
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+  .error { background: var(--error-bg); border: 1px solid #e3b4b2; color: var(--error); border-radius: 8px; padding: 16px 20px; }
+
+  @media (max-width: 480px) {
+    .card { flex-direction: column; align-items: stretch; }
+    .btn { text-align: center; }
+    form { flex-direction: column; }
+    button[type="submit"] { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <!-- PORTAL VIEW -->
+  <section id="portal-view" class="view active">
+    <h1>BrightPath HR System</h1>
+    <p class="lede">Request leave or ask questions about company policy, all in one place.</p>
+    <div id="links" aria-label="HR services"></div>
+  </section>
+
+  <!-- CHATBOT VIEW -->
+  <section id="chatbot-view" class="view">
+    <button class="back-btn" id="back-to-portal" type="button">← Back to HR System Portal</button>
+    <h1>Ask the BrightPath handbook</h1>
+    <p class="lede">Ask about leave, remote work, expenses, benefits and more. Answers come only from the Employee Handbook v4.2.</p>
+
+    <form id="ask-form">
+      <input type="text" id="question" placeholder="How many days of annual leave do I get?" aria-label="Your question" autocomplete="off" required>
+      <button type="submit" id="send">Ask</button>
+    </form>
+
+    <ul class="examples" id="examples">
+      <li><button type="button">How many sick days do I get?</button></li>
+      <li><button type="button">Can I work remotely during probation?</button></li>
+      <li><button type="button">What is the hotel limit for international trips?</button></li>
+    </ul>
+
+    <section id="result" aria-live="polite"></section>
+  </section>
+</main>
+
+<script>
+  // Global Configuration
+  const WEBHOOK_URL = "https://yyyyousseffff.app.n8n.cloud/webhook/brightpath-qa";
+
+  // List of Portal Links. To add a new feature later, add one more object to this list.
+  const LINKS = [
+    {
+      title: "Leave Request",
+      description: "Submit a leave request. Your manager is notified and you get the decision by email.",
+      button: "Request leave",
+      url: "https://docs.google.com/forms/d/e/1FAIpQLSfQFX8glQ9Z0jJ2HMOomfmvDN7trJqSYKoypHqTN7i4De32vg/viewform?usp=publish-editor",
+      type: "external"
+    },
+    {
+      title: "HR Chatbot",
+      description: "Ask about leave, remote work, expenses and benefits. Answers come from the Employee Handbook.",
+      button: "Open chatbot",
+      type: "internal",
+      targetView: "chatbot-view"
+    }
+  ];
+
+  // Element References
+  const portalView = document.getElementById("portal-view");
+  const chatbotView = document.getElementById("chatbot-view");
+  const backBtn = document.getElementById("back-to-portal");
+  const container = document.getElementById("links");
+
+  // Router / View Navigation
+  function switchView(viewName) {
+    if (viewName === "chatbot") {
+      portalView.classList.remove("active");
+      chatbotView.classList.add("active");
+    } else {
+      chatbotView.classList.remove("active");
+      portalView.classList.add("active");
+    }
+  }
+
+  backBtn.addEventListener("click", () => switchView("portal"));
+
+  // Build Portal Links Dynamically
+  for (const link of LINKS) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const text = document.createElement("div");
+    const h2 = document.createElement("h2");
+    h2.textContent = link.title;
+    const p = document.createElement("p");
+    p.textContent = link.description;
+    text.append(h2, p);
+
+    if (link.type === "external") {
+      const a = document.createElement("a");
+      a.className = "btn";
+      a.href = link.url;
+      a.textContent = link.button;
+      a.target = "_blank";
+      a.rel = "noopener";
+      card.append(text, a);
+    } else {
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.type = "button";
+      btn.textContent = link.button;
+      btn.addEventListener("click", () => switchView("chatbot"));
+      card.append(text, btn);
+    }
+
+    container.append(card);
+  }
+
+  // --- CHATBOT LOGIC ---
+  const form = document.getElementById("ask-form");
+  const input = document.getElementById("question");
+  const sendBtn = document.getElementById("send");
+  const result = document.getElementById("result");
+
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function showLoading() {
+    result.innerHTML = '<div class="loading"><div class="spinner"></div><span>Searching the handbook…</span></div>';
+  }
+
+  function showError(msg) {
+    result.innerHTML = '<div class="error"><strong>Something went wrong.</strong> ' + esc(msg) + '</div>';
+  }
+
+  function showAnswer(question, data) {
+    const sources = Array.isArray(data.sources) ? data.sources : [];
+    const sourceHtml = sources.length
+      ? '<div class="sources"><h3>Sources</h3>' + sources.map(s =>
+          '<div class="source"><strong>' + esc(s.section || "Handbook") + '</strong><span>' + esc(s.excerpt || "") + '…</span></div>'
+        ).join("") + '</div>'
+      : "";
+    result.innerHTML =
+      '<div class="result-card"><h2>You asked</h2><p class="question">' + esc(question) + '</p>' +
+      '<h2>Answer</h2><p class="answer">' + esc(data.answer || "No answer returned.") + '</p>' + sourceHtml + '</div>';
+  }
+
+  async function ask(question) {
+    sendBtn.disabled = true;
+    input.disabled = true;
+    showLoading();
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+      if (!res.ok) throw new Error("The workflow returned status " + res.status + ". Check that it is active and the URL is correct.");
+      const data = await res.json();
+      showAnswer(question, data);
+    } catch (err) {
+      showError(err.message.includes("Failed to fetch")
+        ? "Could not reach the n8n webhook. Check the URL, that the workflow is active, and CORS settings."
+        : err.message);
+    } finally {
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (q) ask(q);
+  });
+
+  document.getElementById("examples").addEventListener("click", e => {
+    if (e.target.tagName === "BUTTON") {
+      input.value = e.target.textContent;
+      ask(input.value);
+    }
+  });
+</script>
+</body>
+</html>
