@@ -50,7 +50,21 @@
   .back-btn:hover { color: var(--sea-dark); text-decoration: underline; }
 
   /* Cards & Grid for Portal */
-  #links { display: grid; gap: 16px; }
+  #links, #jobs-list { display: grid; gap: 16px; }
+  .jobs-section { margin-top: 36px; }
+  .jobs-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .jobs-header h2 { margin: 0; font-size: 1.4rem; }
+  .jobs-intro, #jobs-status { color: var(--muted); }
+  .jobs-intro { margin: 8px 0 16px; }
+  #jobs-status { margin: 0 0 16px; }
+  #jobs-status.error { color: var(--error); }
+  .refresh-btn { background: transparent; color: var(--sea); border: 1px solid var(--line); border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; }
+  .refresh-btn:hover { background: #e4eef0; }
+  .card > div { min-width: 0; overflow-wrap: anywhere; }
+  .card h3 { margin: 0 0 4px; font-size: 1.15rem; }
+  .card .job-id { margin-top: 6px; font-size: .85rem; }
+  .referral-unavailable { color: var(--muted); font-size: .9rem; }
+  button, input { font-family: inherit; }
   .card {
     display: flex; align-items: center; justify-content: space-between; gap: 20px;
     background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--sea);
@@ -122,8 +136,19 @@
   <!-- PORTAL VIEW -->
   <section id="portal-view" class="view active">
     <h1>BrightPath HR System</h1>
-    <p class="lede">Request leave or ask questions about company policy, all in one place.</p>
+    <p class="lede">Request leave, ask about company policy, or refer a candidate, all in one place.</p>
     <div id="links" aria-label="HR services"></div>
+
+    <section class="jobs-section" aria-labelledby="open-positions-heading">
+      <div class="jobs-header">
+        <h2 id="open-positions-heading">Open Positions</h2>
+        <button id="refresh-jobs" class="refresh-btn" type="button">Refresh</button>
+      </div>
+      <p class="jobs-intro">Refer a candidate for an available position.</p>
+      <p id="jobs-status" role="status" aria-live="polite">Loading open positions…</p>
+      <div id="jobs-list" aria-busy="true"></div>
+      <noscript><p>Please enable JavaScript to view open positions.</p></noscript>
+    </section>
   </section>
 
   <!-- CHATBOT VIEW -->
@@ -150,6 +175,8 @@
 <script>
   // Global Configuration
   const WEBHOOK_URL = "https://yyyyousseffff.app.n8n.cloud/webhook/brightpath-qa";
+
+  const OPEN_POSITIONS_URL = "https://yyyyousseffff.app.n8n.cloud/webhook/hr-open-positions";
 
   // List of Portal Links. To add a new feature later, add one more object to this list.
   const LINKS = [
@@ -183,6 +210,7 @@
     } else {
       chatbotView.classList.remove("active");
       portalView.classList.add("active");
+      loadOpenPositions();
     }
   }
 
@@ -219,6 +247,109 @@
 
     container.append(card);
   }
+
+  // --- OPEN POSITIONS ---
+  const jobsList = document.getElementById("jobs-list");
+  const jobsStatus = document.getElementById("jobs-status");
+  const refreshJobsBtn = document.getElementById("refresh-jobs");
+  let jobsLoading = false;
+
+  function validReferralUrl(value) {
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" &&
+        url.hostname === "docs.google.com" &&
+        url.pathname.startsWith("/forms/d/e/") ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function renderOpenPositions(jobs) {
+    const cards = document.createDocumentFragment();
+    for (const job of jobs) {
+      const card = document.createElement("article");
+      card.className = "card";
+      const details = document.createElement("div");
+      const heading = document.createElement("h3");
+      heading.textContent = String(job.title || "Open position").trim();
+      const department = document.createElement("p");
+      department.textContent = String(job.department || "Department not specified").trim();
+      const jobId = document.createElement("p");
+      jobId.className = "job-id";
+      jobId.textContent = String(job.jobId);
+      details.append(heading, department, jobId);
+      card.append(details);
+
+      const referralUrl = validReferralUrl(job.referralLink);
+      if (referralUrl) {
+        const link = document.createElement("a");
+        link.className = "btn";
+        link.textContent = "Refer a Candidate";
+        link.href = referralUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.setAttribute("aria-label", "Refer a candidate for " + heading.textContent + " (" + jobId.textContent + ")");
+        card.append(link);
+      } else {
+        const unavailable = document.createElement("span");
+        unavailable.className = "referral-unavailable";
+        unavailable.textContent = "Referral link unavailable. Please contact HR.";
+        card.append(unavailable);
+      }
+      cards.append(card);
+    }
+    jobsList.replaceChildren(cards);
+  }
+
+  async function loadOpenPositions() {
+    if (jobsLoading) return;
+    jobsLoading = true;
+    refreshJobsBtn.disabled = true;
+    jobsList.setAttribute("aria-busy", "true");
+    jobsStatus.className = "";
+    jobsStatus.textContent = "Loading open positions…";
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    try {
+      const response = await fetch(OPEN_POSITIONS_URL, {
+        method: "GET",
+        cache: "no-store",
+        credentials: "omit",
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error("Positions request failed: " + response.status);
+      const data = await response.json();
+      if (!data || !Array.isArray(data.jobs) || data.jobs.some(job =>
+        !job || typeof job.jobId !== "string" || !job.jobId.trim()
+      )) throw new Error("Invalid positions response");
+
+      renderOpenPositions(data.jobs);
+      jobsStatus.textContent = data.jobs.length
+        ? data.jobs.length + (data.jobs.length === 1 ? " open position." : " open positions.")
+        : "There are no open positions right now. Please check back later.";
+    } catch (error) {
+      jobsList.replaceChildren();
+      jobsStatus.className = "error";
+      jobsStatus.textContent = "We couldn't load open positions. Please try Refresh in a moment.";
+      console.error("Could not load open positions:", error);
+    } finally {
+      clearTimeout(timeout);
+      jobsLoading = false;
+      refreshJobsBtn.disabled = false;
+      jobsList.setAttribute("aria-busy", "false");
+    }
+  }
+
+  refreshJobsBtn.addEventListener("click", loadOpenPositions);
+  loadOpenPositions();
+  // Refresh visible positions once a minute and when returning to the page.
+  setInterval(() => {
+    if (!document.hidden && portalView.classList.contains("active")) loadOpenPositions();
+  }, 60000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && portalView.classList.contains("active")) loadOpenPositions();
+  });
 
   // --- CHATBOT LOGIC ---
   const form = document.getElementById("ask-form");
