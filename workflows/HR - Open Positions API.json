@@ -1,0 +1,142 @@
+{
+  "name": "HR - Open Positions API",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "hr-open-positions",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://youssefhelmy45.github.io"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "abc387a8-89c9-4103-a0e7-682f6dff4810",
+      "name": "Webhook",
+      "webhookId": "7c8defd9-d6c5-471d-a44c-e38085917c6d"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us",
+          "mode": "list",
+          "cachedResultName": "Leave_Assignment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1765322026,
+          "mode": "list",
+          "cachedResultName": "Job Openings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit#gid=1765322026"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Open"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b920e68f-6268-4d7f-b3d0-04efc760bf2e",
+      "name": "Get Open Positions",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UJmSsl4Z776zDW62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $input.all()\n  .map(item => item.json)\n  .filter(row => row['Job ID'] && row.Status === 'Open')\n  .map(row => ({\n    jobId: row['Job ID'],\n    title: row['Job title'] || '',\n    department: row.Department || '',\n    referralLink: row['Referral link'] || ''\n  }));\n\nreturn [{\n  json: { jobs }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b6b5163d-d0d4-4b22-8150-ed1ac867338f",
+      "name": "Format Open Positions"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "ef829344-1db2-4b53-8e98-77b398419f3b",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Open Positions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Open Positions": {
+      "main": [
+        [
+          {
+            "node": "Format Open Positions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Open Positions": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "78ffcd88-f7d9-435b-9327-de22d2621445",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ebbd38d53c22b096f855f6c7fc07897a1ff3ec0ca51fd340de4db878b2be141b"
+  },
+  "nodeGroups": [],
+  "id": "yRqIN5gCUYapKi6A",
+  "tags": []
+}

@@ -1,0 +1,729 @@
+{
+  "name": "HR - Position Management",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us",
+          "mode": "list",
+          "cachedResultName": "Leave_Assignment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1014289758,
+          "mode": "list",
+          "cachedResultName": "Position Management Responses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit#gid=1014289758"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "acf62f54-4f57-4cef-9a45-aa2f65888857",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "WwD69jleaWiWFSBj",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Action }}",
+                    "rightValue": "Open a new position",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bd5c12c9-ae12-481b-872a-eae4c6a75a08"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "open"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "8e9294ff-e62a-49af-8970-18822fdb0fa6",
+                    "leftValue": "={{ $json.Action }}",
+                    "rightValue": "Close a position",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "close"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        160,
+        0
+      ],
+      "id": "7f662dbb-d685-4415-8769-edd48ea812bd",
+      "name": "Check Action"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "942ac1b9-8c75-4bfb-830f-e1386ff12717",
+              "name": "Job ID",
+              "value": "={{ 'JOB-' + $execution.id + '-' + ($itemIndex + 1) }}",
+              "type": "string"
+            },
+            {
+              "id": "c53ebc6f-f152-434e-935b-04ac59e3909d",
+              "name": "Apply link",
+              "value": "={{ 'https://docs.google.com/forms/d/e/1FAIpQLSfeQStmyKBLA8bhR6Um_YfRChGxgElA0ytrWbFnOpI_0S8jnQ/viewform?usp=pp_url&entry.488429116=' + encodeURIComponent('JOB-' + $execution.id + '-' + ($itemIndex + 1)) }}",
+              "type": "string"
+            },
+            {
+              "id": "895988e0-07d8-48db-b28d-332a5b9a1fc7",
+              "name": "Referral link",
+              "value": "={{ 'https://docs.google.com/forms/d/e/1FAIpQLSfpOUUPWL2i5CHM9g7gBIp-4iav3AJfcimMecFvdJvuEpqOQg/viewform?usp=pp_url&entry.488429116=' + encodeURIComponent('JOB-' + $execution.id + '-' + ($itemIndex + 1)) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        416,
+        -112
+      ],
+      "id": "6afb7bb9-409c-4316-8027-8173672b3b23",
+      "name": "Generate Job ID"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us",
+          "mode": "list",
+          "cachedResultName": "Leave_Assignment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1765322026,
+          "mode": "list",
+          "cachedResultName": "Job Openings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit#gid=1765322026"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Job ID": "={{ $json['Job ID'] }}",
+            "Job title": "={{ $json['Job title'] }}",
+            "Department": "={{ $json.Department }}",
+            "Required skills": "={{ $json['Required skills'] }}",
+            "Nice-to-have skills": "={{ $json['Nice-to-have skills'] }}",
+            "Minimum experience": "={{ $json['Minimum years of experience'] }}",
+            "Description": "={{ $json['Short description'] }}",
+            "Created date": "={{ $now.toISO() }}",
+            "Status": "Open",
+            "Apply link": "={{ $json['Apply link'] }}",
+            "Referral link": "={{ $json['Referral link'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Job ID",
+              "displayName": "Job ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job title",
+              "displayName": "Job title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Department",
+              "displayName": "Department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Required skills",
+              "displayName": "Required skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nice-to-have skills",
+              "displayName": "Nice-to-have skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Minimum experience",
+              "displayName": "Minimum experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Apply link",
+              "displayName": "Apply link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referral link",
+              "displayName": "Referral link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Created date",
+              "displayName": "Created date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -112
+      ],
+      "id": "43e5abc4-b196-4bd0-9deb-e2d1c8062ee7",
+      "name": "Save Job Opening",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UJmSsl4Z776zDW62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json['Email Address'] }}",
+        "subject": "={{ 'Position opened: ' + $json['Job title'] + ' | ' + $json['Job ID'] }}",
+        "emailType": "text",
+        "message": "={{ 'The position has been opened successfully.\\n\\nJob ID: ' + $json['Job ID'] + '\\nJob title: ' + $json['Job title'] + '\\nDepartment: ' + $json.Department + '\\n\\nApply link:\\n' + $json['Apply link'] + '\\n\\nReferral link:\\n' + $json['Referral link'] }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        -112
+      ],
+      "id": "118f964e-4571-4cdc-a40b-17dd2bba8162",
+      "name": "Notify HR - Position Opened",
+      "webhookId": "65b23998-1408-4733-8dbb-9e1eedf22ac6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XPQGCuonBln7lScR",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us",
+          "mode": "list",
+          "cachedResultName": "Leave_Assignment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1765322026,
+          "mode": "list",
+          "cachedResultName": "Job Openings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit#gid=1765322026"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Job ID",
+              "lookupValue": "={{ $json['Job ID'].trim() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        192
+      ],
+      "id": "7e69a462-55ec-4a8a-967c-0dd82412a80a",
+      "name": "Find Job to Close",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UJmSsl4Z776zDW62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "0154cb89-29c4-4743-adbe-02a71c0bb7b9",
+              "leftValue": "={{ $json['Job ID'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        656,
+        192
+      ],
+      "id": "28320a85-fd87-4552-a22b-1930d4549af9",
+      "name": "Job Found?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us",
+          "mode": "list",
+          "cachedResultName": "Leave_Assignment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1765322026,
+          "mode": "list",
+          "cachedResultName": "Job Openings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1H_bJVE0qjwJM_ssGD2zutpL3tO4sy6XtHCl-08bz5us/edit#gid=1765322026"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Job ID": "={{ $json['Job ID'] }}",
+            "Status": "Closed"
+          },
+          "matchingColumns": [
+            "Job ID"
+          ],
+          "schema": [
+            {
+              "id": "Job ID",
+              "displayName": "Job ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Job title",
+              "displayName": "Job title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Department",
+              "displayName": "Department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Required skills",
+              "displayName": "Required skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Nice-to-have skills",
+              "displayName": "Nice-to-have skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Minimum experience",
+              "displayName": "Minimum experience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Apply link",
+              "displayName": "Apply link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Referral link",
+              "displayName": "Referral link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Created date",
+              "displayName": "Created date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        80
+      ],
+      "id": "7b0e54f7-c248-493d-a97c-f26a3938d5dc",
+      "name": "Close Job Position",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UJmSsl4Z776zDW62",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Check Action').item.json['Email Address'] }}",
+        "subject": "={{ 'Position closed: ' + $json['Job ID'] }}",
+        "emailType": "text",
+        "message": "={{ 'The position has been closed successfully.\\n\\nJob ID: ' + $json['Job ID'] + '\\nReason: ' + ($('Check Action').item.json.Reason || 'No reason provided.') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        80
+      ],
+      "id": "03babc3b-afce-428c-ac2c-b1fedc2eebda",
+      "name": "Notify HR - Position Closed",
+      "webhookId": "bf8efe83-90f9-4d4d-b64e-8572e5907f14",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XPQGCuonBln7lScR",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Check Action').item.json['Email Address'] }}",
+        "subject": "={{ 'Position not found: ' + $('Check Action').item.json['Job ID'] }}",
+        "message": "={{ 'No position was found with this Job ID: ' + $('Check Action').item.json['Job ID'] + '\\n\\nNo changes were made. Please check the Job ID and submit the request again.' }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        272
+      ],
+      "id": "0e4e7ed1-11e6-49fc-acf9-6da3302f9f1c",
+      "name": "Notify HR - Job Not Found",
+      "webhookId": "9e7e5d24-948b-4683-99d9-e1ef7712f936",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XPQGCuonBln7lScR",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Action": {
+      "main": [
+        [
+          {
+            "node": "Generate Job ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Job to Close",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Job ID": {
+      "main": [
+        [
+          {
+            "node": "Save Job Opening",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Job Opening": {
+      "main": [
+        [
+          {
+            "node": "Notify HR - Position Opened",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Job to Close": {
+      "main": [
+        [
+          {
+            "node": "Job Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Found?": {
+      "main": [
+        [
+          {
+            "node": "Close Job Position",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify HR - Job Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Close Job Position": {
+      "main": [
+        [
+          {
+            "node": "Notify HR - Position Closed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b0cbefb0-d28d-4237-8d8f-b318c26a3690",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ebbd38d53c22b096f855f6c7fc07897a1ff3ec0ca51fd340de4db878b2be141b"
+  },
+  "nodeGroups": [],
+  "id": "qOCfnsDhZ5WkSQiW",
+  "tags": []
+}
